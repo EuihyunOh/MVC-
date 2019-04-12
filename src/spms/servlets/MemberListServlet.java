@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import spms.dao.MemberDao;
+import spms.dao.MySqlMemberDao;
 
 @WebServlet("/member/list")
 public class MemberListServlet extends HttpServlet {
@@ -21,13 +21,10 @@ public class MemberListServlet extends HttpServlet {
 		try {
 			ServletContext sc = this.getServletContext();
 			
-			MemberDao memberDao = (MemberDao)sc.getAttribute("memberDao");
+			MySqlMemberDao memberDao = (MySqlMemberDao)sc.getAttribute("memberDao");
 			
-			request.setAttribute("members", memberDao.selectList());
-			
-			response.setContentType("text/html; charset=UTF-8");
-			RequestDispatcher rd = request.getRequestDispatcher("/member/MemberList.jsp");
-			rd.include(request, response);
+		//	request.setAttribute("members", memberDao.selectList());
+			request.setAttribute("viewUrl", "/member/MemberList.jsp");
 			
 		}catch(Exception e) {
 			throw new ServletException(e);

@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import spms.dao.MemberDao;
+import spms.dao.MySqlMemberDao;
 import spms.vo.Member;
 
 
@@ -20,8 +20,7 @@ public class MemberAddServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) 
 			throws ServletException, IOException{response.setContentType("text/html; charset=UTF-8");
 	
-	RequestDispatcher rd = request.getRequestDispatcher("/member/MemberForm.jsp");
-	rd.forward(request, response);
+	request.setAttribute("viewUrl", "/member/MemberForm.jsp");
 	}
 	
 	@Override
@@ -30,19 +29,15 @@ public class MemberAddServlet extends HttpServlet {
 		
 		try {
 			ServletContext sc= this.getServletContext();
-			MemberDao memberDao = (MemberDao)sc.getAttribute("memberDao");
+			MySqlMemberDao memberDao = (MySqlMemberDao)sc.getAttribute("memberDao");
 			
-			Member member = new Member();
-			member.setEmail(request.getParameter("email"))
-				  .setName(request.getParameter("name"))
-				  .setPassword(request.getParameter("password"));
-			
+			Member member = (Member)request.getAttribute("member");	
 			memberDao.insert(member);
 			
-			response.sendRedirect("list");
+			request.setAttribute("viewUrl", "redirect:list.do");
+			
 		}catch(Exception e) {
-			RequestDispatcher rd = request.getRequestDispatcher("member/Error.jsp");
-			rd.forward(request, response);
+			throw new ServletException(e);
 		}finally {
 		}
 	}

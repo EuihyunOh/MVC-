@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import spms.dao.MemberDao;
+import spms.dao.MySqlMemberDao;
 import spms.vo.Member;
 
 @SuppressWarnings("serial")
@@ -20,15 +20,16 @@ public class MemberUpdateServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
 		try {
 			ServletContext sc = this.getServletContext();			
-			MemberDao memberDao = (MemberDao)sc.getAttribute("memberDao");
+			MySqlMemberDao memberDao = (MySqlMemberDao)sc.getAttribute("memberDao");
 
 			request.setAttribute("member", memberDao.selectOne(Integer.parseInt(request.getParameter("no"))));
 			RequestDispatcher rd = request.getRequestDispatcher("/member/MemberUpdateForm.jsp");
 			rd.forward(request, response);
 			
+			request.setAttribute("viewUrl", "/member/MemberUpdateForm.jsp");
+			
 		}catch(Exception e){
-			RequestDispatcher rd = request.getRequestDispatcher("/member/Error.jsp");
-			rd.forward(request, response);
+			throw new ServletException(e);
 		}finally {
 		}
 	}
@@ -37,19 +38,15 @@ public class MemberUpdateServlet extends HttpServlet {
 
 		try {
 			ServletContext sc = this.getServletContext();
-			MemberDao memberDao = (MemberDao)sc.getAttribute("memberDao");
+			MySqlMemberDao memberDao = (MySqlMemberDao)sc.getAttribute("memberDao");
 			
-			Member member = new Member();
-			member.setEmail(request.getParameter("email"))
-				  .setName(request.getParameter("name"))
-				  .setNo(Integer.parseInt(request.getParameter("no")));
+			Member member = (Member)request.getAttribute("member");
 			
 			memberDao.update(member);	
 			
-			response.sendRedirect("list");
+			request.setAttribute("viewUrl", "redirect:list.do");
 		}catch(Exception e){
-			RequestDispatcher rd = request.getRequestDispatcher("/member/Error.jsp");
-			rd.forward(request, response);
+			throw new ServletException(e);
 		}finally {
 		}
 	}

@@ -1,32 +1,46 @@
 package spms.listeners;
 
-import java.sql.SQLException;
 
-import javax.naming.InitialContext;
+import java.io.InputStream;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
-import javax.sql.DataSource;
 
-import spms.dao.MemberDao;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+
+import spms.context.ApplicationContext;
+
+
 
 @WebListener
 public class ContextLoaderListener implements ServletContextListener {
+	static ApplicationContext applicationContext;
 	
+	public static ApplicationContext getApplicationContext() {
+		return applicationContext;
+	}
 	
 	@Override
 	public void contextInitialized(ServletContextEvent event) {
 		try {
-			ServletContext sc = event.getServletContext();
+			applicationContext = new ApplicationContext();
 			
-			DataSource ds = (DataSource)InitialContext.doLookup("java:comp/env/jdbc/studydb");	
+			String resource = "spms/dao/mybatis-config.xml";
+			InputStream inputStream = Resources.getResourceAsStream(resource);
+			SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
 			
+			applicationContext.addBean("sqlSessionFactory", sqlSessionFactory);
 			
-			MemberDao memberDao = new MemberDao();
-			memberDao.setDataSource(ds);
+			ServletContext sc = event.getServletContext();			
+			String propertiesPath = sc.getRealPath(sc.getInitParameter("contextConfigLocation"));
 			
-			sc.setAttribute("memberDao", memberDao);
+			applicationContext.prepareObjectsByProperties(propertiesPath);
+			applicationContext.prepareObjectsByAnnotation("");
+			applicationContext.injectDependency();
 			
 		}catch(Throwable e) {
 			e.printStackTrace();
